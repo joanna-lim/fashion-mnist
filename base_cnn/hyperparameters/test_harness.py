@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.optim as optim
+from tqdm import tqdm
 
 # order of tuning: batch size, number of epochs, size of fully connected layers, choice of activation function
 
@@ -49,13 +50,16 @@ def define_model(fc_layer_size, activation_fn):
 
 # hyperparameters to tune in this function:
     # number of epochs: [5, 10, 15, 20]
+from tqdm import tqdm
+
 def train_and_evaluate_model(model, train_loader, test_loader, num_epochs):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 
     total_step = len(train_loader)
     for epoch in range(num_epochs):
-        for i, (images, labels) in enumerate(train_loader):
+        pbar = tqdm(enumerate(train_loader), total=total_step)
+        for i, (images, labels) in pbar:
             optimizer.zero_grad()
             outputs = model(images)
             loss = criterion(outputs, labels)
@@ -63,19 +67,24 @@ def train_and_evaluate_model(model, train_loader, test_loader, num_epochs):
             optimizer.step()
 
             if (i + 1) % 200 == 0:
-                print(f'Epoch [{epoch + 1}/{num_epochs}], Step [{i + 1}/{total_step}], Loss: {loss.item()}')
+                pbar.set_description(f'Epoch [{epoch + 1}/{num_epochs}], Step [{i + 1}/{total_step}], Loss: {loss.item()}')
 
     model.eval()
     with torch.no_grad():
         correct = 0
         total = 0
-        for images, labels in test_loader:
+        pbar_test = tqdm(test_loader)
+        for images, labels in pbar_test:
             outputs = model(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
-        print(f'Accuracy of the model on the test images: {100 * correct / total}%')
-        return 100 * correct / total
+            pbar_test.set_description(f'Accuracy: {100 * correct / total:.2f}%')
+        
+    accuracy = 100 * correct / total
+    print(f'Accuracy of the model on the test images: {accuracy:.2f}%')
+    return accuracy
+
 
 def run_test_harness(train_dataset, test_dataset, batch_size, fc_layer_size, activation_fn, num_epochs):
     train_loader, test_loader = load_dataset(train_dataset, test_dataset, batch_size)
