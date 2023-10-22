@@ -5,7 +5,7 @@ import torch.optim as optim
 from tqdm import tqdm
 import numpy as np
 
-# order of tuning: learning rate, size of fully connected layers, batch size, choice of activation function, early stopping
+# order of tuning: size of fully connected layers, batch size, choice of activation functions
 
 # hyperparameters to tune in this function:
     # batch size: [32, 64, 128] 
@@ -14,15 +14,6 @@ def load_dataset(train_dataset, test_dataset, batch_size):
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, test_loader
-
-# def prep_pixels(train_loader, test_loader):
-#     train_loader.dataset.data = train_loader.dataset.data.float()
-#     test_loader.dataset.data = test_loader.dataset.data.float()
-
-#     train_loader.dataset.data = train_loader.dataset.data / 255.0
-#     test_loader.dataset.data = test_loader.dataset.data / 255.0
-
-#     return train_loader, test_loader
 
 def prep_pixels(train_loader, test_loader):
     if isinstance(train_loader.dataset, list):
@@ -70,32 +61,26 @@ def define_model(fc_layer_size, activation_fn):
     model = CNNModel()
     return model
 
-# hyperparameters to tune in this function:
-    # learning rate: [0.001, 0.01, 0.1]
-    # early stopping: [3, 4, 5, 6, 7, 8, 9, 10]
-
-# TEST OUT K FOLD
-
 from sklearn.model_selection import KFold
 from torch.utils.data import ConcatDataset
+from copy import deepcopy
 
-def train_and_evaluate_model_kfold(model, train_dataset, test_dataset, early_stopping, learning_rate, k=5):
+def train_and_evaluate_model_kfold(model, train_dataset, test_dataset, batch_size):
     criterion = nn.CrossEntropyLoss()
-    # optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
 
     combined_dataset = ConcatDataset([train_dataset, test_dataset])
     combined_data_list = list(combined_dataset)
-    kf = KFold(n_splits=k, shuffle=True)
+    kf = KFold(n_splits=5, shuffle=True)
     accuracies = []
     fold = 0
     for train_index, test_index in kf.split(combined_data_list):
         fold += 1
-        model = model
-        optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+        curr_model = deepcopy(model)
+        optimizer = optim.SGD(curr_model.parameters(), lr=0.01, momentum=0.9)
         train_data = [combined_data_list[i] for i in train_index]
         test_data = [combined_data_list[i] for i in test_index]
 
-        train_loader, test_loader = load_dataset(train_data, test_data, 32)
+        train_loader, test_loader = load_dataset(train_data, test_data, batch_size)
         train_loader, test_loader = prep_pixels(train_loader, test_loader)
 
         best_accuracy = 0.0
@@ -106,7 +91,7 @@ def train_and_evaluate_model_kfold(model, train_dataset, test_dataset, early_sto
             pbar = tqdm(enumerate(train_loader), total=total_step)
             for i, (images, labels) in pbar:
                 optimizer.zero_grad()
-                outputs = model(images)
+                outputs = curr_model(images)
                 loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
@@ -120,7 +105,7 @@ def train_and_evaluate_model_kfold(model, train_dataset, test_dataset, early_sto
                 total = 0
                 pbar_test = tqdm(test_loader)
                 for images, labels in pbar_test:
-                    outputs = model(images)
+                    outputs = curr_model(images)
                     _, predicted = torch.max(outputs.data, 1)
                     total += labels.size(0)
                     correct += (predicted == labels).sum().item()
@@ -134,7 +119,7 @@ def train_and_evaluate_model_kfold(model, train_dataset, test_dataset, early_sto
 
                 else:
                     patience_counter += 1
-                    if patience_counter >= early_stopping:
+                    if patience_counter >= 3: # patience = 3
                         print(f'Early stopping at epoch {epoch + 1} for fold {fold}')
                         break
 
@@ -144,10 +129,10 @@ def train_and_evaluate_model_kfold(model, train_dataset, test_dataset, early_sto
     return avg_accuracy
 
 
-def run_test_harness(train_dataset, test_dataset, batch_size, fc_layer_size, activation_fn, early_stopping, learning_rate):
+def run_test_harness(train_dataset, test_dataset, batch_size, fc_layer_size, activation_fn):
     # train_loader, test_loader = load_dataset(train_dataset, test_dataset, batch_size)
     # train_loader, test_loader = prep_pixels(train_loader, test_loader)
     model = define_model(fc_layer_size, activation_fn)
-    accuracy = train_and_evaluate_model_kfold(model, train_dataset, test_dataset, early_stopping, learning_rate, 5)
+    accuracy = train_and_evaluate_model_kfold(model, train_dataset, test_dataset, batch_size)
     return accuracy
 
