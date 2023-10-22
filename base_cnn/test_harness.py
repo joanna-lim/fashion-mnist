@@ -84,6 +84,7 @@ def train_and_evaluate_model_kfold(model, train_dataset, test_dataset, batch_siz
         total_step = len(train_loader)
         for epoch in range(20):
             pbar = tqdm(enumerate(train_loader), total=total_step)
+            curr_model.train()
             for i, (images, labels) in pbar:
                 optimizer.zero_grad()
                 outputs = curr_model(images)
@@ -94,7 +95,7 @@ def train_and_evaluate_model_kfold(model, train_dataset, test_dataset, batch_siz
                 if (i + 1) % 200 == 0:
                     pbar.set_description(f'Fold {fold}, Epoch [{epoch + 1}/{20}], Step [{i + 1}/{total_step}], Loss: {loss.item()}')
 
-            model.eval()
+            curr_model.eval()
             with torch.no_grad():
                 correct = 0
                 total = 0
