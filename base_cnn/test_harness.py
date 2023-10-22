@@ -16,17 +16,13 @@ def load_dataset(train_dataset, test_dataset, batch_size):
     return train_loader, test_loader
 
 def prep_pixels(train_loader, test_loader):
-    if isinstance(train_loader.dataset, list):
-        for data, target in train_loader.dataset:
+   
+    for data, target in train_loader.dataset:
+        data = data.float() / 255.0
+   
+    for data, target in test_loader.dataset:
             data = data.float() / 255.0
-    else:
-        train_loader.dataset.data = train_loader.dataset.data.float() / 255.0
-
-    if isinstance(test_loader.dataset, list):
-        for data, target in test_loader.dataset:
-            data = data.float() / 255.0
-    else:
-        test_loader.dataset.data = test_loader.dataset.data.float() / 255.0
+    
 
     return train_loader, test_loader
 
@@ -46,7 +42,6 @@ def define_model(fc_layer_size, activation_fn):
             self.flatten = nn.Flatten()
             self.fc1 = nn.Linear(32 * 14 * 14, fc_layer_size)   # 128, 256, 512
             self.fc2 = nn.Linear(fc_layer_size, 10)
-
 
         def forward(self, x):
             x = self.conv1(x)
