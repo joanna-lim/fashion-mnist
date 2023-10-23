@@ -16,14 +16,12 @@ def load_dataset(train_dataset, test_dataset, batch_size):
     return train_loader, test_loader
 
 def prep_pixels(train_loader, test_loader):
-   
     for data, target in train_loader.dataset:
         data = data.float() / 255.0
-   
+
     for data, target in test_loader.dataset:
             data = data.float() / 255.0
-    
-
+            
     return train_loader, test_loader
 
 
