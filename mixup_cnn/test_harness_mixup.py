@@ -23,7 +23,6 @@ def prep_pixels(train_loader, test_loader):
     for data, target in test_loader.dataset:
             data = data.float() / 255.0
     
-
     return train_loader, test_loader
 
 
@@ -131,4 +130,3 @@ def run_test_harness(train_dataset, test_dataset, batch_size, fc_layer_size, act
     model = define_model(fc_layer_size, activation_fn)
     accuracy = train_and_evaluate_model_kfold(model, train_dataset, test_dataset, batch_size)
     return accuracy
-
