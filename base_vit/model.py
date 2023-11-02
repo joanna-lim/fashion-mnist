@@ -30,7 +30,6 @@ class EmbedLayer(nn.Module):
         x = x + self.pos_embedding  # Adding positional embedding
         return x
 
-
 class SelfAttention(nn.Module):
     def __init__(self):
         super().__init__()
