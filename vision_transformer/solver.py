@@ -15,8 +15,8 @@ class Solver(object):
         self.model = VisionTransformer().to(device)
         self.ce = nn.CrossEntropyLoss()
 
-        print('--------Network--------')
-        print(self.model)
+        # print('--------Network--------')
+        # print(self.model)
 
     def test_dataset(self, db='test_dataset'):
         self.model.eval()
