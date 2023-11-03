@@ -101,7 +101,7 @@ class SolverTwo(object):
 
         accuracies = []
 
-        for epoch in range(20):
+        for epoch in range(200):
             pbar = tqdm(enumerate(self.train_loader), total=len(self.train_loader))
             self.model.train()
             for i, (images, labels) in pbar:
