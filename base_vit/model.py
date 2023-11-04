@@ -111,3 +111,18 @@ class VisionTransformer16(nn.Module):
         x = self.norm(x)
         x = self.classifier(x)
         return x
+
+class VisionTransformer6(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.embedding = EmbedLayer()
+        self.encoder = nn.Sequential(*[Encoder() for _ in range(6)], nn.LayerNorm(96))
+        self.norm = nn.LayerNorm(96) 
+        self.classifier = Classifier()
+
+    def forward(self, x):
+        x = self.embedding(x)
+        x = self.encoder(x)
+        x = self.norm(x)
+        x = self.classifier(x)
+        return x
