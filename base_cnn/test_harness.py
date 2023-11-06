@@ -63,7 +63,7 @@ def define_model2(fc_layer_size, activation_fn):
             self.relu = activation_fn # nn.ReLU(), nn.LeakyReLU(), nn.ELU() or nn.PReLU()
             self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
             self.flatten = nn.Flatten()
-            self.fc1 = nn.Linear(64 * 14 * 14, fc_layer_size)   # 128, 256, 512
+            self.fc1 = nn.Linear(64 * 7 * 7, fc_layer_size)   # 128, 256, 512
             self.fc2 = nn.Linear(fc_layer_size, 10)
 
         def forward(self, x):
@@ -92,7 +92,7 @@ def define_model3(fc_layer_size, activation_fn):
             self.relu = activation_fn # nn.ReLU(), nn.LeakyReLU(), nn.ELU() or nn.PReLU()
             self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
             self.flatten = nn.Flatten()
-            self.fc1 = nn.Linear(128 * 14 * 14, fc_layer_size)   # 128, 256, 512
+            self.fc1 = nn.Linear(128 * 3 * 3, fc_layer_size)   # 128, 256, 512
             self.fc2 = nn.Linear(fc_layer_size, 10)
 
         def forward(self, x):
