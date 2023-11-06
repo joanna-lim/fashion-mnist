@@ -26,7 +26,7 @@ def prep_pixels(train_loader, test_loader):
 
 
 # hyperparameters to tune in this function:
-    # number of layers (if have time): [2, 3, 4, 5]
+    # number of conv layers (if have time): [1, 2, 3, 4]
     # size of fully connected layers: [128, 256, 512]
     # choice of activation function: [relu, leaky relu, elu, prelu]
 
@@ -53,6 +53,67 @@ def define_model(fc_layer_size, activation_fn):
 
     model = CNNModel()
     return model
+
+def define_model2(fc_layer_size, activation_fn):
+    class CNNModel2(nn.Module):
+        def __init__(self):
+            super(CNNModel2, self).__init__()
+            self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
+            self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+            self.relu = activation_fn # nn.ReLU(), nn.LeakyReLU(), nn.ELU() or nn.PReLU()
+            self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.flatten = nn.Flatten()
+            self.fc1 = nn.Linear(64 * 7 * 7, fc_layer_size)   # 128, 256, 512
+            self.fc2 = nn.Linear(fc_layer_size, 10)
+
+        def forward(self, x):
+            x = self.conv1(x)
+            x = self.relu(x)
+            x = self.maxpool(x)
+            x = self.conv2(x)
+            x = self.relu(x)
+            x = self.maxpool(x)
+            x = self.flatten(x)
+            x = self.fc1(x)
+            x = self.relu(x)
+            x = self.fc2(x)
+            return x
+
+    model = CNNModel2()
+    return model
+
+def define_model3(fc_layer_size, activation_fn):
+    class CNNModel3(nn.Module):
+        def __init__(self):
+            super(CNNModel3, self).__init__()
+            self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1)
+            self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+            self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
+            self.relu = activation_fn # nn.ReLU(), nn.LeakyReLU(), nn.ELU() or nn.PReLU()
+            self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+            self.flatten = nn.Flatten()
+            self.fc1 = nn.Linear(128 * 3 * 3, fc_layer_size)   # 128, 256, 512
+            self.fc2 = nn.Linear(fc_layer_size, 10)
+
+        def forward(self, x):
+            x = self.conv1(x)
+            x = self.relu(x)
+            x = self.maxpool(x)
+            x = self.conv2(x)
+            x = self.relu(x)
+            x = self.maxpool(x)
+            x = self.conv3(x)
+            x = self.relu(x)
+            x = self.maxpool(x)
+            x = self.flatten(x)
+            x = self.fc1(x)
+            x = self.relu(x)
+            x = self.fc2(x)
+            return x
+
+    model = CNNModel3()
+    return model
+
 
 from sklearn.model_selection import KFold
 from torch.utils.data import ConcatDataset
@@ -129,4 +190,5 @@ def run_test_harness(train_dataset, test_dataset, batch_size, fc_layer_size, act
     model = define_model(fc_layer_size, activation_fn)
     accuracy = train_and_evaluate_model_kfold(model, train_dataset, test_dataset, batch_size)
     return accuracy
+
 
